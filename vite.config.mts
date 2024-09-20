@@ -14,39 +14,16 @@ export default defineConfig({
             output: {
                 entryFileNames: "index.js",
                 chunkFileNames: "chunks/[name]-[hash].js",
-                assetFileNames: "assets/[name]-[hash].[ext]"
-                // async import chunk grouping seems not working on rollup
+                assetFileNames: "assets/[name]-[hash].[ext]",
                 // https://rollupjs.org/configuration-options/#output-manualchunks
-                // manualChunks: (id, { getModuleInfo }) => {
-                //     if (id.includes("Shaders/") || id.includes("ShadersWGSL/")) {
-                //         const dependentEntryPoints = [];
-
-                //         const idsToHandle = new Set<string>(getModuleInfo(id)?.dynamicImporters ?? []);
-
-                //         for (const moduleId of idsToHandle) {
-                //             const moduleInfo = getModuleInfo(moduleId);
-                //             if (!moduleInfo) continue;
-                //             const { isEntry, dynamicImporters, importers } = moduleInfo;
-
-                //             if (isEntry || dynamicImporters.length > 0)
-                //                 dependentEntryPoints.push(moduleId);
-
-                //             for (const importerId of importers) idsToHandle.add(importerId);
-                //         }
-
-                //         if (dependentEntryPoints.length === 1) {
-                //             return dependentEntryPoints[0].split("/").slice(-1)[0].split(".")[0];
-                //         }
-                //         if (dependentEntryPoints.length > 1) {
-                //             if (id.includes("ShadersWGSL/")) {
-                //                 return "wgslShaders";
-                //             } else {
-                //                 return "glslShaders";
-                //             }
-                //         }
-                //     }
-                //     return null;
-                // }
+                manualChunks: (id) => {
+                    if (id.includes("Shaders/")) {
+                        return "glslShaders";
+                    } else if (id.includes("ShadersWGSL/")) {
+                        return "wgslShaders";
+                    }
+                    return null;
+                }
             }
         },
         modulePreload: false
