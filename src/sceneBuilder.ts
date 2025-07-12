@@ -1,10 +1,7 @@
-import "@babylonjs/core/Engines/shaderStore";
 // for use loading screen, we need to import following module.
 import "@babylonjs/core/Loading/loadingScreen";
 // for cast shadow, we need to import following module.
 import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
-import "@babylonjs/core/Engines/Extensions/engine.rawTexture";
-import "@babylonjs/core/Physics/joinedPhysicsEngineComponent";
 // for use WebXR we need to import following two modules.
 import "@babylonjs/core/Helpers/sceneHelpers";
 import "@babylonjs/core/Materials/Node/Blocks";
@@ -15,20 +12,16 @@ import "babylon-mmd/esm/Loader/Optimized/bpmxLoader";
 // if you want to use .pmd file, uncomment following line.
 // import "babylon-mmd/esm/Loader/pmdLoader";
 // for render outline, we need to import following module.
-import "babylon-mmd/esm/Loader/Shaders/mmdOutline.fragment";
-import "babylon-mmd/esm/Loader/Shaders/mmdOutline.vertex";
 import "babylon-mmd/esm/Loader/mmdOutlineRenderer";
 // for play `MmdAnimation` we need to import following two modules.
 import "babylon-mmd/esm/Runtime/Animation/mmdRuntimeCameraAnimation";
 import "babylon-mmd/esm/Runtime/Optimized/Animation/mmdWasmRuntimeModelAnimation";
-import "@babylonjs/core/Shaders/default.fragment";
-import "@babylonjs/core/Shaders/default.vertex";
 
 import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
 import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
 import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
-import { SceneLoader } from "@babylonjs/core/Loading/sceneLoader";
+import { LoadAssetContainerAsync } from "@babylonjs/core/Loading/sceneLoader";
 import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 import { Matrix, Vector3 } from "@babylonjs/core/Maths/math.vector";
 import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
@@ -36,8 +29,7 @@ import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
 import { DefaultRenderingPipeline } from "@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 import { Scene } from "@babylonjs/core/scene";
 import { ShadowOnlyMaterial } from "@babylonjs/materials/shadowOnly/shadowOnlyMaterial";
-import type { MmdStandardMaterialBuilder } from "babylon-mmd/esm/Loader/mmdStandardMaterialBuilder";
-import type { BpmxLoader } from "babylon-mmd/esm/Loader/Optimized/bpmxLoader";
+import { MmdStandardMaterialBuilder } from "babylon-mmd/esm/Loader/mmdStandardMaterialBuilder";
 import { BvmdLoader } from "babylon-mmd/esm/Loader/Optimized/bvmdLoader";
 import { SdefInjector } from "babylon-mmd/esm/Loader/sdefInjector";
 import { StreamAudioPlayer } from "babylon-mmd/esm/Runtime/Audio/streamAudioPlayer";
@@ -45,7 +37,7 @@ import { MmdCamera } from "babylon-mmd/esm/Runtime/mmdCamera";
 import type { MmdMesh } from "babylon-mmd/esm/Runtime/mmdMesh";
 import { MmdWasmAnimation } from "babylon-mmd/esm/Runtime/Optimized/Animation/mmdWasmAnimation";
 import { MmdWasmInstanceTypeMPR } from "babylon-mmd/esm/Runtime/Optimized/InstanceType/multiPhysicsRelease";
-import { getMmdWasmInstance } from "babylon-mmd/esm/Runtime/Optimized/mmdWasmInstance";
+import { GetMmdWasmInstance } from "babylon-mmd/esm/Runtime/Optimized/mmdWasmInstance";
 import { MmdWasmRuntime, MmdWasmRuntimeAnimationEvaluationType } from "babylon-mmd/esm/Runtime/Optimized/mmdWasmRuntime";
 import { MmdWasmPhysics } from "babylon-mmd/esm/Runtime/Optimized/Physics/mmdWasmPhysics";
 // for use Ammo.js physics engine, uncomment following line.
@@ -60,10 +52,7 @@ export class SceneBuilder implements ISceneBuilder {
         SdefInjector.OverrideEngineCreateEffect(engine);
 
         // get bpmx loader and set some configurations.
-        const bpmxLoader = SceneLoader.GetPluginForExtension(".bpmx") as BpmxLoader;
-        bpmxLoader.loggingEnabled = true;
-        const materialBuilder = bpmxLoader.materialBuilder as MmdStandardMaterialBuilder;
-        materialBuilder;
+        const materialBuilder = new MmdStandardMaterialBuilder();
         // if you want override texture loading, uncomment following lines.
         // materialBuilder.loadDiffuseTexture = (): void => { /* do nothing */ };
         // materialBuilder.loadSphereTexture = (): void => { /* do nothing */ };
@@ -149,7 +138,7 @@ export class SceneBuilder implements ISceneBuilder {
         // fatch assets in parallel by using Promise.all
         const [[mmdWasmInstance, mmdRuntime], mmdAnimation, modelMesh] = await Promise.all([
             (async(): Promise<[typeof mmdWasmInstance, typeof mmdRuntime]> => {
-                const mmdWasmInstance = await getMmdWasmInstance(new MmdWasmInstanceTypeMPR());
+                const mmdWasmInstance = await GetMmdWasmInstance(new MmdWasmInstanceTypeMPR());
 
                 // create mmd runtime with physics
                 const mmdRuntime = new MmdWasmRuntime(mmdWasmInstance, scene, new MmdWasmPhysics(scene));
@@ -170,13 +159,22 @@ export class SceneBuilder implements ISceneBuilder {
                 (event) => updateLoadingText(0, `Loading motion... ${event.loaded}/${event.total} (${Math.floor(event.loaded * 100 / event.total)}%)`)),
             // you need to get this file by yourself from https://www.deviantart.com/sanmuyyb/art/YYB-Hatsune-Miku-10th-DL-702119716
             // for this example, we use .bpmx file. but you can use .pmx or .pmd file with same way with side effect import statement at the top of this file.
-            SceneLoader.ImportMeshAsync(
-                undefined,
-                "res/private_test/model/",
-                "YYB Hatsune Miku_10th.bpmx",
+            LoadAssetContainerAsync(
+                "res/private_test/model/YYB Hatsune Miku_10th.bpmx",
                 scene,
-                (event) => updateLoadingText(1, `Loading model... ${event.loaded}/${event.total} (${Math.floor(event.loaded * 100 / event.total)}%)`)
-            ).then(result => result.meshes[0] as MmdMesh)
+                {
+                    onProgress: (event) => updateLoadingText(1, `Loading model... ${event.loaded}/${event.total} (${Math.floor(event.loaded * 100 / event.total)}%)`),
+                    pluginOptions: {
+                        mmdmodel: {
+                            loggingEnabled: true,
+                            materialBuilder
+                        }
+                    }
+                }
+            ).then(result => {
+                result.addAllToScene();
+                return result.meshes[0] as MmdMesh;
+            })
         ]);
 
         // create youtube like player control

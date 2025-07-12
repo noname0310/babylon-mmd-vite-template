@@ -47,6 +47,7 @@ export default defineConfig({
         checker({
             typescript: true,
             eslint: {
+                useFlatConfig: true,
                 lintCommand: "eslint --ext .ts,.tsx ."
             }
         })
@@ -54,6 +55,7 @@ export default defineConfig({
     optimizeDeps: {
         exclude: [
             // see https://github.com/vitejs/vite/issues/8427
+            "@babylonjs/core",
             "@babylonjs/havok",
             "babylon-mmd"
         ]
