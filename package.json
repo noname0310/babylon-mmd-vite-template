@@ -8,22 +8,22 @@
         "preview": "vite preview"
     },
     "devDependencies": {
-        "@babylonjs/core": "^8.16.1",
+        "@babylonjs/core": "^8.17.2",
         "@babylonjs/havok": "^1.3.10",
-        "@babylonjs/inspector": "^8.16.1",
-        "@babylonjs/materials": "^8.16.1",
-        "@stylistic/eslint-plugin": "^5.1.0",
-        "@types/node": "^24.0.13",
+        "@babylonjs/inspector": "^8.17.2",
+        "@babylonjs/materials": "^8.17.2",
+        "@stylistic/eslint-plugin": "^5.2.2",
+        "@types/node": "^24.1.0",
         "@typescript-eslint/eslint-plugin": "^8.36.0",
-        "@typescript-eslint/parser": "^8.36.0",
+        "@typescript-eslint/parser": "^8.38.0",
         "@vitejs/plugin-basic-ssl": "^2.1.0",
-        "babylon-mmd": "^0.67.2",
+        "babylon-mmd": "^1.0.0-beta.1",
         "eslint": "^9.31.0",
         "eslint-plugin-simple-import-sort": "^12.1.1",
         "typescript": "5.8.3",
-        "typescript-eslint": "^8.36.0",
-        "vite": "^7.0.4",
-        "vite-plugin-checker": "^0.10.0",
-        "vite-plugin-static-copy": "^3.1.0"
+        "typescript-eslint": "^8.38.0",
+        "vite": "^7.0.5",
+        "vite-plugin-checker": "^0.10.1",
+        "vite-plugin-static-copy": "^3.1.1"
     }
 }
