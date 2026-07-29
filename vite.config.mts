@@ -39,8 +39,9 @@ export default defineConfig({
         viteStaticCopy({
             targets: [
                 {
-                    src: normalizePath(resolve(__dirname, "res/*")),
-                    dest: "res"
+                    src: normalizePath(resolve(__dirname, "res/**/*")),
+                    dest: "res",
+                    rename: { stripBase: 1 }
                 }
             ]
         }),

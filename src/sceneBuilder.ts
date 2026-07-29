@@ -1,57 +1,94 @@
-// for use loading screen, we need to import following module.
-import "@babylonjs/core/Loading/loadingScreen";
-// for cast shadow, we need to import following module.
-import "@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent";
-// for use WebXR we need to import following two modules.
-import "@babylonjs/core/Helpers/sceneHelpers";
-import "@babylonjs/core/Materials/Node/Blocks";
-// for load .bpmx file, we need to import following module.
-import "babylon-mmd/esm/Loader/Optimized/bpmxLoader";
-// if you want to use .pmx file, uncomment following line.
-// import "babylon-mmd/esm/Loader/pmxLoader";
-// if you want to use .pmd file, uncomment following line.
-// import "babylon-mmd/esm/Loader/pmdLoader";
-// for render outline, we need to import following module.
-import "babylon-mmd/esm/Loader/mmdOutlineRenderer";
-// for play `MmdAnimation` we need to import following two modules.
-import "babylon-mmd/esm/Runtime/Animation/mmdRuntimeCameraAnimation";
-import "babylon-mmd/esm/Runtime/Optimized/Animation/mmdWasmRuntimeModelAnimation";
-
-import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
-import type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
-import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight";
+import { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera.pure";
+import { EngineFunctionContext } from "@babylonjs/core/Engines/abstractEngine.functions";
+import { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine.pure";
+import { RegisterAbstractEngineLoadingScreen } from "@babylonjs/core/Engines/AbstractEngine/abstractEngine.loadingScreen.pure";
+import { RegisterAbstractEngineStates } from "@babylonjs/core/Engines/AbstractEngine/abstractEngine.states.pure";
+import { RegisterAbstractEngineStencil } from "@babylonjs/core/Engines/AbstractEngine/abstractEngine.stencil.pure";
+import { RegisterAbstractEngineTexture } from "@babylonjs/core/Engines/AbstractEngine/abstractEngine.texture.pure";
+import { RegisterEnginesExtensionsEngineAlpha } from "@babylonjs/core/Engines/Extensions/engine.alpha.pure";
+import { RegisterEnginesExtensionsEngineRawTexture } from "@babylonjs/core/Engines/Extensions/engine.rawTexture.pure";
+import { RegisterEnginesExtensionsEngineRenderTarget } from "@babylonjs/core/Engines/Extensions/engine.renderTarget.pure";
+import { RegisterEnginesExtensionsEngineRenderTargetTexture } from "@babylonjs/core/Engines/Extensions/engine.renderTargetTexture.pure";
+import { RegisterEngineUniformBuffer } from "@babylonjs/core/Engines/Extensions/engine.uniformBuffer.pure";
+import { DirectionalLight } from "@babylonjs/core/Lights/directionalLight.pure";
 import { ShadowGenerator } from "@babylonjs/core/Lights/Shadows/shadowGenerator";
+import { RegisterLoadingScreen } from "@babylonjs/core/Loading/loadingScreen.pure";
 import { LoadAssetContainerAsync } from "@babylonjs/core/Loading/sceneLoader";
-import { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
-import { Matrix, Vector3 } from "@babylonjs/core/Maths/math.vector";
-import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder";
-import { TransformNode } from "@babylonjs/core/Meshes/transformNode";
-import { DefaultRenderingPipeline } from "@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
-import { Scene } from "@babylonjs/core/scene";
+import { _GetCompatibleTextureLoader } from "@babylonjs/core/Materials/Textures/Loaders/textureLoaderManager";
+import { Color3, Color4 } from "@babylonjs/core/Maths/math.color.pure";
+import { Matrix, Vector3 } from "@babylonjs/core/Maths/math.vector.pure";
+import { CreateGround } from "@babylonjs/core/Meshes/Builders/groundBuilder.pure";
+import { TransformNode } from "@babylonjs/core/Meshes/transformNode.pure";
+import { SetMissingSideEffectWarningsEnabled } from "@babylonjs/core/Misc/devTools";
+import { LoadFile, LoadImage } from "@babylonjs/core/Misc/fileTools.pure";
+import { DefaultRenderingPipeline } from "@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.pure";
+import { Scene } from "@babylonjs/core/scene.pure";
+import { WebXRDefaultExperience } from "@babylonjs/core/XR/webXRDefaultExperience";
 import { ShadowOnlyMaterial } from "@babylonjs/materials/shadowOnly/shadowOnlyMaterial";
+import { RegisterMmdOutlineRenderer } from "babylon-mmd/esm/Loader/mmdOutlineRenderer.pure";
 import { MmdStandardMaterialBuilder } from "babylon-mmd/esm/Loader/mmdStandardMaterialBuilder";
+import { RegisterBpmxLoader } from "babylon-mmd/esm/Loader/Optimized/bpmxLoader.pure";
 import { BvmdLoader } from "babylon-mmd/esm/Loader/Optimized/bvmdLoader";
+import { RegisterDxBmpTextureLoader } from "babylon-mmd/esm/Loader/registerDxBmpTextureLoader";
 import { SdefInjector } from "babylon-mmd/esm/Loader/sdefInjector";
+import { RegisterMmdRuntimeCameraAnimation } from "babylon-mmd/esm/Runtime/Animation/mmdRuntimeCameraAnimation.pure";
+import { RegisterMmdRuntimeModelAnimation } from "babylon-mmd/esm/Runtime/Animation/mmdRuntimeModelAnimation.pure";
 import { StreamAudioPlayer } from "babylon-mmd/esm/Runtime/Audio/streamAudioPlayer";
-import { MmdCamera } from "babylon-mmd/esm/Runtime/mmdCamera";
+import { MmdCamera } from "babylon-mmd/esm/Runtime/mmdCamera.pure";
 import type { MmdMesh } from "babylon-mmd/esm/Runtime/mmdMesh";
-import { MmdWasmAnimation } from "babylon-mmd/esm/Runtime/Optimized/Animation/mmdWasmAnimation";
+import { MmdRuntime } from "babylon-mmd/esm/Runtime/mmdRuntime";
 import { MmdWasmInstanceTypeMPR } from "babylon-mmd/esm/Runtime/Optimized/InstanceType/multiPhysicsRelease";
 import { GetMmdWasmInstance } from "babylon-mmd/esm/Runtime/Optimized/mmdWasmInstance";
-import { MmdWasmRuntime, MmdWasmRuntimeAnimationEvaluationType } from "babylon-mmd/esm/Runtime/Optimized/mmdWasmRuntime";
-import { MmdWasmPhysics } from "babylon-mmd/esm/Runtime/Optimized/Physics/mmdWasmPhysics";
-// for use Ammo.js physics engine, uncomment following line.
-// import ammoPhysics from "babylon-mmd/esm/Runtime/Physics/External/ammo.wasm";
+import { MultiPhysicsRuntime } from "babylon-mmd/esm/Runtime/Optimized/Physics/Bind/Impl/multiPhysicsRuntime";
+import { MotionType } from "babylon-mmd/esm/Runtime/Optimized/Physics/Bind/motionType";
+import { PhysicsStaticPlaneShape } from "babylon-mmd/esm/Runtime/Optimized/Physics/Bind/physicsShape";
+import { RigidBody } from "babylon-mmd/esm/Runtime/Optimized/Physics/Bind/rigidBody";
+import { RigidBodyConstructionInfo } from "babylon-mmd/esm/Runtime/Optimized/Physics/Bind/rigidBodyConstructionInfo";
+import { MmdBulletPhysics } from "babylon-mmd/esm/Runtime/Optimized/Physics/mmdBulletPhysics";
 import { MmdPlayerControl } from "babylon-mmd/esm/Runtime/Util/mmdPlayerControl";
 
 import type { ISceneBuilder } from "./baseRuntime";
 
 export class SceneBuilder implements ISceneBuilder {
     public async build(canvas: HTMLCanvasElement, engine: AbstractEngine): Promise<Scene> {
+        SetMissingSideEffectWarningsEnabled(true); // for debug, we enable missing side effect warning.
+
+        // Required Engine Extensions
+        RegisterAbstractEngineStates();
+        RegisterAbstractEngineStencil();
+        RegisterAbstractEngineTexture();
+        RegisterEnginesExtensionsEngineAlpha();
+        RegisterEnginesExtensionsEngineRawTexture();
+        // RegisterEnginesExtensionsEngineReadTexture();
+        RegisterEnginesExtensionsEngineRenderTarget();
+        RegisterEnginesExtensionsEngineRenderTargetTexture();
+        RegisterEngineUniformBuffer();
+
+        AbstractEngine.GetCompatibleTextureLoader = _GetCompatibleTextureLoader; // core/Engines/AbstractEngine/abstractEngine.textureLoaders.ts
+
+        // core/Misc/fileTools.pure.ts
+        // instead of using RegisterFileTools() to register the functions, we directly assign them to EngineFunctionContext
+        EngineFunctionContext.loadFile = LoadFile;
+        EngineFunctionContext.loadImage = LoadImage;
+
+        // Optional Engine Extensions
+        RegisterAbstractEngineLoadingScreen(); // optional, for use loading screen, we need to register this extension.
+        RegisterLoadingScreen(); // optional, for use default loading screen, we need to register this extension.
+
+        // RegisterPmxLoader(); // for load .pmx file, we need to register this extension.
+        // RegisterPmdLoader(); // for load .pmd file, we need to register this extension.
+        RegisterBpmxLoader(); // for load .bpmx file, we need to register this extension.
+        RegisterMmdOutlineRenderer(); // for render outline, we need to register this extension.
+        RegisterMmdRuntimeCameraAnimation(); // for play `MmdAnimation` we need to register this extension.
+        RegisterMmdRuntimeModelAnimation(); // for play `MmdAnimation` we need to register this extension.
+
+        // for accurate bmp texture loading, we need custom loader
+        RegisterDxBmpTextureLoader();
+
         // for apply SDEF on shadow, outline, depth rendering
         SdefInjector.OverrideEngineCreateEffect(engine);
 
-        // get bpmx loader and set some configurations.
+        // create mmd standard material builder
         const materialBuilder = new MmdStandardMaterialBuilder();
         // if you want override texture loading, uncomment following lines.
         // materialBuilder.loadDiffuseTexture = (): void => { /* do nothing */ };
@@ -136,23 +173,24 @@ export class SceneBuilder implements ISceneBuilder {
         bvmdLoader.loggingEnabled = true;
 
         // fatch assets in parallel by using Promise.all
-        const [[mmdWasmInstance, mmdRuntime], mmdAnimation, modelMesh] = await Promise.all([
-            (async(): Promise<[typeof mmdWasmInstance, typeof mmdRuntime]> => {
-                const mmdWasmInstance = await GetMmdWasmInstance(new MmdWasmInstanceTypeMPR());
+        const [[mmdRuntime, physicsRuntime], mmdAnimation, modelMesh] = await Promise.all([
+            (async(): Promise<[MmdRuntime, MultiPhysicsRuntime]> => {
+                updateLoadingText(0, "Loading mmd runtime...");
+                const wasmInstance = await GetMmdWasmInstance(new MmdWasmInstanceTypeMPR());
+                updateLoadingText(0, "Loading mmd runtime... Done");
+
+                const physicsRuntime = new MultiPhysicsRuntime(wasmInstance);
+                physicsRuntime.setGravity(new Vector3(0, -98, 0));
+                physicsRuntime.register(scene);
 
                 // create mmd runtime with physics
-                const mmdRuntime = new MmdWasmRuntime(mmdWasmInstance, scene, new MmdWasmPhysics(scene));
-
-                // In buffered mode, application can perform animation evaluation and rendering in parallel. but animation evaluation is one frame delayed.
-                mmdRuntime.evaluationType = MmdWasmRuntimeAnimationEvaluationType.Buffered;
-
+                // see https://github.com/noname0310/babylon-mmd/pull/38 for more information about MMD Runtime setup
+                const mmdRuntime = new MmdRuntime(scene, new MmdBulletPhysics(physicsRuntime)); // `MmdPhysics` use Bullet physics engine for solve rigid body simulation
                 mmdRuntime.loggingEnabled = true;
                 mmdRuntime.register(scene);
-
                 mmdRuntime.setAudioPlayer(audioPlayer);
                 mmdRuntime.playAnimation();
-
-                return [mmdWasmInstance, mmdRuntime];
+                return [mmdRuntime, physicsRuntime];
             })(),
             // you need to get this file by yourself from https://www.nicovideo.jp/watch/sm41164308
             bvmdLoader.loadAsync("motion", "res/private_test/motion/melancholy_night/motion.bvmd",
@@ -167,28 +205,25 @@ export class SceneBuilder implements ISceneBuilder {
                     pluginOptions: {
                         mmdmodel: {
                             loggingEnabled: true,
-                            materialBuilder
+                            materialBuilder: materialBuilder
                         }
                     }
                 }
             ).then(result => {
                 result.addAllToScene();
-                return result.meshes[0] as MmdMesh;
+                return result.rootNodes[0] as MmdMesh;
             })
         ]);
+
+        // hide loading screen
+        scene.onAfterRenderObservable.addOnce(() => engine.hideLoadingUI());
 
         // create youtube like player control
         const mmdPlayerControl = new MmdPlayerControl(scene, mmdRuntime, audioPlayer);
         mmdPlayerControl.showPlayerControl();
 
-        // mmd wasm animation enable to evaluate mmd animation on wasm thread. it's completely optional.
-        const mmdWasmAnimation = new MmdWasmAnimation(mmdAnimation, mmdWasmInstance, scene);
-
-        // hide loading screen
-        scene.onAfterRenderObservable.addOnce(() => engine.hideLoadingUI());
-
-        const cameraRuntimeAnimationHandle = mmdCamera.createRuntimeAnimation(mmdWasmAnimation);
-        mmdCamera.setRuntimeAnimation(cameraRuntimeAnimationHandle);
+        const cameraAnimationHandle = mmdCamera.createRuntimeAnimation(mmdAnimation);
+        mmdCamera.setRuntimeAnimation(cameraAnimationHandle);
         mmdRuntime.addAnimatable(mmdCamera);
 
         {
@@ -198,8 +233,8 @@ export class SceneBuilder implements ISceneBuilder {
             shadowGenerator.addShadowCaster(modelMesh);
 
             const mmdModel = mmdRuntime.createMmdModel(modelMesh);
-            const modelRuntimeAnimationHandle = mmdModel.createRuntimeAnimation(mmdWasmAnimation);
-            mmdModel.setRuntimeAnimation(modelRuntimeAnimationHandle);
+            const modelAnimationHandle = mmdModel.createRuntimeAnimation(mmdAnimation);
+            mmdModel.setRuntimeAnimation(modelAnimationHandle);
 
             // make sure directional light follow the model
             const bodyBone = mmdModel.runtimeBones.find((bone) => bone.name === "センター");
@@ -233,12 +268,11 @@ export class SceneBuilder implements ISceneBuilder {
             scene.blockMaterialDirtyMechanism = true;
         });
 
-        // if you want ground collision, uncomment following lines.
-        // const groundRigidBody = new PhysicsBody(ground, PhysicsMotionType.STATIC, true, scene);
-        // groundRigidBody.shape = new PhysicsShapeBox(
-        //     new Vector3(0, -1, 0),
-        //     new Quaternion(),
-        //     new Vector3(100, 2, 100), scene);
+        const info = new RigidBodyConstructionInfo(physicsRuntime.wasmInstance);
+        info.motionType = MotionType.Static;
+        info.shape = new PhysicsStaticPlaneShape(physicsRuntime, new Vector3(0, 1, 0), 0);
+        const groundBody = new RigidBody(physicsRuntime, info);
+        physicsRuntime.addRigidBodyToGlobal(groundBody);
 
         const defaultPipeline = new DefaultRenderingPipeline("default", true, scene, [mmdCamera, camera]);
         defaultPipeline.samples = 4;
@@ -262,10 +296,14 @@ export class SceneBuilder implements ISceneBuilder {
         };
 
         // if you want to use inspector, uncomment following line.
-        // Inspector.Show(scene, { });
+        // ShowInspector(scene);
 
         // webxr experience for AR
-        const webXrExperience = await scene.createDefaultXRExperienceAsync({
+        const webXrExperience = await WebXRDefaultExperience.CreateAsync(scene, {
+            disablePointerSelection: true,
+            disableTeleportation: true,
+            disableNearInteraction: true,
+            disableHandTracking: true,
             uiOptions: {
                 sessionMode: "immersive-ar",
                 referenceSpaceType: "local-floor"

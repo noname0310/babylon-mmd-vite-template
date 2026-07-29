@@ -1,9 +1,9 @@
-import { Engine } from "@babylonjs/core/Engines/engine";
+import { Engine } from "@babylonjs/core/Engines/engine.pure";
 
 import { BaseRuntime } from "./baseRuntime";
 import { SceneBuilder } from "./sceneBuilder";
 
-window.onload = async(): Promise<void> => {
+window.onload = (): void => {
     const canvas = document.createElement("canvas");
     canvas.style.width = "100%";
     canvas.style.height = "100%";

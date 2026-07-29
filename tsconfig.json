@@ -24,12 +24,15 @@
         "./src/Types",
         "./node_modules/@types"
     ],
-    "baseUrl": "./src",
     "paths": {
         "@/*": [
             "./*"
         ]
     }
   },
+  "include": [
+    "src/**/*",
+    "node_modules/babylon-mmd/esm/**/*.types.d.ts"
+  ],
   "exclude": ["dist"]
 }
